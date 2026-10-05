@@ -1,0 +1,13 @@
+GBA2NSP Android glue/UI code: prepared for the user project.
+No Nintendo keys, copyrighted ROMs, Nintendo SDK files, or commercial game content are included.
+
+hacBrewPack
+- Upstream: pplatoon/hacBrewPack
+- Pinned commit: 56698df456eac4d5076e85499fe045a90fba790b
+- License: ISC. A copy is stored at app/src/main/assets/licenses/hacBrewPack-ISC.txt.
+- hacBrewPack also contains code derived from hactool/switch-tools and bundled mbedTLS; their upstream license files are fetched with the pinned source during the native build.
+
+mGBA runtime
+- Upstream: mgba-emu/mgba tag 0.10.5
+- License: Mozilla Public License 2.0 (see the upstream LICENSE file).
+- The runtime-builder clones this source at build time; no mGBA binary is shipped in this source ZIP.
