@@ -1,0 +1,52 @@
+name: Build GBA Switch Runtime
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'runtime-builder/**'
+      - '.github/workflows/build-switch-runtime.yml'
+
+jobs:
+  build-runtime:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkita64:latest
+    env:
+      DEVKITPRO: /opt/devkitpro
+      DEVKITA64: /opt/devkitpro/devkitA64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build reusable mGBA runtime
+        shell: bash
+        run: |
+          chmod +x runtime-builder/build_runtime.sh
+          runtime-builder/build_runtime.sh
+
+      - name: Validate runtime artifact structure
+        shell: bash
+        run: |
+          test -s runtime-builder/dist/GBA-Switch-Runtime.zip
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile
+          zpath = Path("runtime-builder/dist/GBA-Switch-Runtime.zip")
+          with zipfile.ZipFile(zpath) as z:
+              names = set(z.namelist())
+              missing = {"exefs/main", "exefs/main.npdm"} - names
+              if missing:
+                  raise SystemExit(f"missing runtime files: {sorted(missing)}")
+              for name in ("exefs/main", "exefs/main.npdm"):
+                  if z.getinfo(name).file_size <= 0:
+                      raise SystemExit(f"empty runtime file: {name}")
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GBA-Switch-Runtime
+          path: |
+            runtime-builder/dist/GBA-Switch-Runtime.zip
+            runtime-builder/dist/GBA-Switch-Runtime.sha256
+            runtime-builder/dist/BUILD-REPORT.txt
+          if-no-files-found: error
