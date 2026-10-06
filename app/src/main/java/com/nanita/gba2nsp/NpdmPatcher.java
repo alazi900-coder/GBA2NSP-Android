@@ -32,9 +32,17 @@ public final class NpdmPatcher {
                     "Runtime NPDM لا يسمح بهذا Title ID. المدى: %016X-%016X", min, max));
         }
 
-        // ACI0 ProgramId is not the signed ACID range. Keep ACID untouched and
-        // patch only the actual program ID so one runtime template can be reused.
+        // ACI0 is not covered by the signed ACID body. Retail templates can
+        // repeat the ProgramId in ACI0 filesystem/save-owner tables, so patch
+        // the ProgramId plus every matching owner-id reference inside ACI0.
+        long oldTitleId = le64(d, aciOff + 0x10);
         putLe64(d, aciOff + 0x10, titleId);
+        for (int off = aciOff + 0x18; off <= aciOff + aciSize - 8; off++) {
+            if (le64(d, off) == oldTitleId) {
+                putLe64(d, off, titleId);
+                off += 7;
+            }
+        }
 
         File parent = output.getParentFile();
         if (parent != null) parent.mkdirs();
