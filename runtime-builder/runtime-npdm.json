@@ -1,15 +1,15 @@
 {
-  "name": "GBA Android Runtime",
-  "title_id": "0x0500000000000001",
-  "title_id_range_min": "0x0500000000000000",
-  "title_id_range_max": "0x05FFFFFFFFFFFFFF",
-  "main_thread_stack_size": "0x40000",
+  "name": "GBA Android Runtime V5",
+  "title_id": "0x0100000000010000",
+  "title_id_range_min": "0x0100000000010000",
+  "title_id_range_max": "0x01FFFFFFFFFFFFFF",
+  "main_thread_stack_size": "0x100000",
   "main_thread_priority": 44,
-  "default_cpu_id": 2,
+  "default_cpu_id": 0,
   "process_category": 0,
   "pool_partition": 0,
   "is_64_bit": true,
-  "address_space_type": 1,
+  "address_space_type": 3,
   "is_retail": true,
   "filesystem_access": {
     "permissions": "0xFFFFFFFFFFFFFFFF"
@@ -17,16 +17,43 @@
   "service_access": [
     "fsp-srv",
     "acc:u0",
-    "appletOE",
+    "aoc:u",
     "apm",
+    "appletOE",
+    "audin:u",
     "audout:u",
     "audren:u",
+    "bsd:u",
+    "bsdcfg",
+    "caps:su",
+    "caps:u",
+    "csrng",
+    "friend:u",
     "hid",
+    "hwopus",
+    "irs",
+    "ldn:u",
+    "ldr:ro",
     "lm",
+    "mii:u",
+    "mm:u",
+    "nfc:mf:u",
+    "nfc:user",
+    "nfp:user",
+    "nifm:u",
+    "nim:eca",
+    "nsd:u",
+    "ntc",
     "nvdrv",
+    "pcm",
+    "pctl",
+    "pl:u",
+    "prepo:u",
     "psm",
     "set",
     "set:sys",
+    "sfdnsres",
+    "ssl",
     "time:u",
     "vi:u"
   ],
@@ -35,8 +62,8 @@
     {
       "type": "kernel_flags",
       "value": {
-        "highest_thread_priority": 63,
-        "lowest_thread_priority": 16,
+        "highest_thread_priority": 59,
+        "lowest_thread_priority": 28,
         "lowest_cpu_id": 0,
         "highest_cpu_id": 2
       }
@@ -78,11 +105,23 @@
         "svcSendSyncRequestLight": "0x20",
         "svcSendSyncRequest": "0x21",
         "svcSendSyncRequestWithUserBuffer": "0x22",
+        "svcSendAsyncRequestWithUserBuffer": "0x23",
+        "svcGetProcessId": "0x24",
+        "svcGetThreadId": "0x25",
         "svcBreak": "0x26",
         "svcOutputDebugString": "0x27",
         "svcReturnFromException": "0x28",
         "svcGetInfo": "0x29",
-        "svcUnmapTransferMemory": "0x52"
+        "svcMapPhysicalMemory": "0x2C",
+        "svcUnmapPhysicalMemory": "0x2D",
+        "svcGetLastThreadInfo": "0x2F",
+        "svcSetThreadActivity": "0x32",
+        "svcGetThreadContext3": "0x33",
+        "svcWaitForAddress": "0x34",
+        "svcSignalToAddress": "0x35",
+        "svcSynchronizePreemptionState": "0x36",
+        "svcUnmapTransferMemory": "0x52",
+        "svcFlushProcessDataCache": "0x5F"
       }
     },
     {
@@ -91,11 +130,18 @@
     },
     {
       "type": "min_kernel_version",
-      "value": "0x30"
+      "value": "0x91"
     },
     {
       "type": "handle_table_size",
       "value": 512
+    },
+    {
+      "type": "debug_flags",
+      "value": {
+        "allow_debug": true,
+        "force_debug": false
+      }
     }
   ]
 }
