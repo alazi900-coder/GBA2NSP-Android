@@ -43,3 +43,10 @@ hacBrewPack emits unsigned NCA header signatures. Reusing an untouched retail NP
 ## v0.10 control packaging fix
 
 The retail runtime can now import the original working `control.nacp` as `control/control.nacp.template` together with the original `control/icon_*.dat` files. The builder preserves runtime-sensitive fields such as the original SaveDataOwnerId, save-data sizes, LocalCommunicationId policy, crash-report/HDCP settings and other control flags. It only patches the application-bound IDs and user-visible strings.
+
+
+## v0.12 loader fix
+
+Base application Title IDs must satisfy `title_id & 0x1FFF == 0` because Switch/Yuzu/Eden use `0xFFFFFFFFFFFFE000` as the base-title mask. Earlier versions only cleared 12 bits, which could make the loader search for Control NCA under a different title ID and abort before loading ExeFS.
+
+v0.12 also stops clearing the retail ACID signature/public-key block. Only ACI0 ProgramId and matching ACI0 owner-id references are patched; the signed ACID policy remains byte-identical to the original template.
