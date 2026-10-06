@@ -82,11 +82,26 @@ Java_com_nanita_gba2nsp_NativeEngine_nativeBuildNsp(
     char *exefs = join_path(workspace, "exefs");
     char *romfs = join_path(workspace, "romfs");
     char *control = join_path(workspace, "control");
+    char *logo = join_path(workspace, "logo");
+    char *logo_png = join_path(workspace, "logo/NintendoLogo.png");
     char *logpath = join_path(workspace, "hacbrewpack.log");
     int rc = -1003;
 
-    if (tempdir && ncadir && exefs && romfs && control && logpath) {
-        char *argv[] = {
+    if (tempdir && ncadir && exefs && romfs && control && logo && logo_png && logpath) {
+        int has_logo = access(logo_png, R_OK) == 0;
+        char *argv_with_logo[] = {
+            (char *)"hacbrewpack",
+            (char *)"--keyset", (char *)keys,
+            (char *)"--tempdir", tempdir,
+            (char *)"--ncadir", ncadir,
+            (char *)"--nspdir", (char *)outdir,
+            (char *)"--exefsdir", exefs,
+            (char *)"--romfsdir", romfs,
+            (char *)"--logodir", logo,
+            (char *)"--controldir", control,
+            NULL
+        };
+        char *argv_no_logo[] = {
             (char *)"hacbrewpack",
             (char *)"--keyset", (char *)keys,
             (char *)"--tempdir", tempdir,
@@ -98,7 +113,8 @@ Java_com_nanita_gba2nsp_NativeEngine_nativeBuildNsp(
             (char *)"--nologo",
             NULL
         };
-        int argc = 16;
+        char **argv = has_logo ? argv_with_logo : argv_no_logo;
+        int argc = has_logo ? 17 : 16;
 
         pthread_mutex_lock(&g_hbp_lock);
         int log_fd = open(logpath, O_CREAT | O_WRONLY | O_TRUNC, 0600);
@@ -120,7 +136,7 @@ Java_com_nanita_gba2nsp_NativeEngine_nativeBuildNsp(
         pthread_mutex_unlock(&g_hbp_lock);
     }
 
-    free(tempdir); free(ncadir); free(exefs); free(romfs); free(control); free(logpath);
+    free(tempdir); free(ncadir); free(exefs); free(romfs); free(control); free(logo); free(logo_png); free(logpath);
     (*env)->ReleaseStringUTFChars(env, jkeys, keys);
     (*env)->ReleaseStringUTFChars(env, jworkspace, workspace);
     (*env)->ReleaseStringUTFChars(env, joutdir, outdir);
