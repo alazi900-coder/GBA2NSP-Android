@@ -45,7 +45,7 @@ public class MainActivity extends Activity {
         Button gen = button("توليد Title ID جديد");
         gen.setOnClickListener(v -> tid.setText(BuilderCore.generateTitleId())); box.addView(gen);
 
-        Button runtime = button("استيراد GBA Switch Runtime");
+        Button runtime = button("استيراد GBA Switch Runtime / Retail Template");
         runtime.setOnClickListener(v -> pick(PICK_RUNTIME, "application/zip")); box.addView(runtime);
 
         Button rom = button("اختيار ملف GBA");
@@ -125,10 +125,18 @@ public class MainActivity extends Activity {
             BuilderCore.validateGba(romFile); BuilderCore.validateKeys(keysFile);
             if (iconFile != null) BuilderCore.validateIcon(iconFile);
             workspace = BuilderCore.prepareWorkspace(this, romFile, iconFile, title.getText().toString(), author.getText().toString(), tid.getText().toString());
-            append("✓ romfs/game.gba");
-            append("✓ romfs/font-new.png — mGBA GUI font");
+            String romPath = RuntimeManager.romRelativePath(this);
+            append("✓ romfs/" + romPath);
             append("✓ exefs/main");
-            append("✓ exefs/main.npdm — ProgramId patched");
+            append("✓ exefs/main.npdm — ProgramId/ACI0 owner IDs patched");
+            if (RuntimeManager.isRetailRuntime(this)) {
+                append("✓ exefs/rtld");
+                append("✓ exefs/sdk");
+                append("✓ exefs/subsdk0");
+                append("✓ Retail GBA runtime template");
+            } else {
+                append("✓ romfs/font-new.png — mGBA GUI font");
+            }
             append("✓ control/control.nacp — SaveData 8 MiB + journal 4 MiB");
             append(iconFile == null ? "✓ icon: using default hacBrewPack behavior" : "✓ control icon copied");
             append("✓ Title ID: " + tid.getText());

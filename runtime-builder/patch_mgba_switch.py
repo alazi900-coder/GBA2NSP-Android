@@ -15,8 +15,8 @@ if not main.is_file():
     raise SystemExit(f"mGBA Switch main.c not found: {main}")
 
 s = main.read_text(encoding="utf-8")
-if "GBA_ANDROID_RUNTIME_PATCH_V3" in s:
-    print("mGBA runtime already patched (V3)")
+if "GBA_ANDROID_RUNTIME_PATCH_V5" in s:
+    print("mGBA runtime already patched (V5)")
     raise SystemExit(0)
 if "GBA_ANDROID_RUNTIME_PATCH" in s:
     raise SystemExit("Old GBA runtime patch detected; clean vendor/mgba before rebuilding")
@@ -34,7 +34,7 @@ if not main_sig:
     raise SystemExit("Unsupported mGBA source: main() signature not found")
 
 forced = r'''
-	/* GBA_ANDROID_RUNTIME_PATCH_V3: launch the ROM embedded in RomFS. */
+	/* GBA_ANDROID_RUNTIME_PATCH_V5: launch the ROM embedded in RomFS. */
 	char* gbaSingleArgv[] = { "mgba", "romfs:/game.gba", NULL };
 	argc = 2;
 	argv = gbaSingleArgv;
@@ -47,25 +47,30 @@ if init_marker not in s:
 
 save_setup = r'''
 
-	/* GBA_ANDROID_RUNTIME_PATCH_V3: persistent per-title/per-user SaveData. */
+	/* GBA_ANDROID_RUNTIME_PATCH_V5: persistent SaveData when available.
+	 * Failure to mount SaveData must not abort the emulator. */
+	bool gbaSingleSaveMounted = false;
 	AccountUid gbaSingleUid = {0};
 	u64 gbaSingleProgramId = 0;
 	Result gbaSingleRc = accountInitialize(AccountServiceType_Application);
-	if (R_SUCCEEDED(gbaSingleRc)) gbaSingleRc = accountGetPreselectedUser(&gbaSingleUid);
-	accountExit();
+	if (R_SUCCEEDED(gbaSingleRc)) {
+		gbaSingleRc = accountGetPreselectedUser(&gbaSingleUid);
+		accountExit();
+	}
 	if (R_SUCCEEDED(gbaSingleRc)) {
 		gbaSingleRc = svcGetInfo(&gbaSingleProgramId, InfoType_ProgramId, CUR_PROCESS_HANDLE, 0);
 	}
-	if (R_FAILED(gbaSingleRc) || !gbaSingleProgramId) {
-		printf("GBA NSP: ProgramId/account query failed: 0x%x\n", gbaSingleRc);
-		return 1;
+	if (R_SUCCEEDED(gbaSingleRc) && gbaSingleProgramId) {
+		gbaSingleRc = fsdevMountSaveData("save", gbaSingleProgramId, gbaSingleUid);
+		if (R_SUCCEEDED(gbaSingleRc)) {
+			gbaSingleSaveMounted = true;
+			mCoreConfigSetOverrideValue(&runner.config, "savegamePath", "save:/");
+		} else {
+			printf("GBA NSP: SaveData unavailable (0x%x), continuing without mounted save.\n", gbaSingleRc);
+		}
+	} else {
+		printf("GBA NSP: account/ProgramId unavailable (0x%x), continuing.\n", gbaSingleRc);
 	}
-	gbaSingleRc = fsdevMountSaveData("save", gbaSingleProgramId, gbaSingleUid);
-	if (R_FAILED(gbaSingleRc)) {
-		printf("GBA NSP: fsdevMountSaveData failed: 0x%x\n", gbaSingleRc);
-		return 1;
-	}
-	mCoreConfigSetOverrideValue(&runner.config, "savegamePath", "save:/");
 '''
 s = s.replace(init_marker, init_marker + save_setup, 1)
 
@@ -74,7 +79,7 @@ if deinit_marker not in s:
     raise SystemExit("Unsupported mGBA source: mGUIDeinit marker not found")
 s = s.replace(
     deinit_marker,
-    'fsdevCommitDevice("save");\n\tfsdevUnmountDevice("save");\n\t' + deinit_marker,
+    'if (gbaSingleSaveMounted) {\n\t\tfsdevCommitDevice("save");\n\t\tfsdevUnmountDevice("save");\n\t}\n\t' + deinit_marker,
     1,
 )
 
