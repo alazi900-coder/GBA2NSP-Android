@@ -3,7 +3,6 @@ package com.nanita.gba2nsp;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Arrays;
 
 /** Minimal NPDM patcher for a reusable homebrew runtime template. */
 public final class NpdmPatcher {
@@ -33,12 +32,9 @@ public final class NpdmPatcher {
                     "Runtime NPDM لا يسمح بهذا Title ID. المدى: %016X-%016X", min, max));
         }
 
-        // hacBrewPack writes unsigned NCA headers. A retail ACID left intact
-        // advertises a real public key, which makes loaders verify NCA Signature 2
-        // against that key and reject the rebuilt Program NCA. Convert the retail
-        // template to the same unsigned/homebrew form used by npdmtool: clear the
-        // ACID signature and NCA-signing modulus while keeping the ACID policy body.
-        Arrays.fill(d, acidOff, acidOff + 0x200, (byte)0);
+        // Preserve the original signed ACID and its NCA-signing modulus.
+        // ACI0 is outside the signed ACID body, so ProgramId/owner IDs can be
+        // patched without invalidating the ACID signature.
 
         // ACI0 is not covered by the signed ACID body. Retail templates can
         // repeat the ProgramId in ACI0 filesystem/save-owner tables, so patch
