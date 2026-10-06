@@ -16,7 +16,7 @@ if not main.is_file():
 
 s = main.read_text(encoding="utf-8")
 if "GBA_ANDROID_RUNTIME_PATCH_V5" in s:
-    print("mGBA runtime already patched (V3)")
+    print("mGBA runtime already patched (V5)")
     raise SystemExit(0)
 if "GBA_ANDROID_RUNTIME_PATCH" in s:
     raise SystemExit("Old GBA runtime patch detected; clean vendor/mgba before rebuilding")
