@@ -18,6 +18,13 @@ public final class RuntimeManager {
     public static File subsdk0File(Context c) { return new File(runtimeDir(c), "exefs/subsdk0"); }
     public static File fontFile(Context c) { return new File(runtimeDir(c), "romfs/font-new.png"); }
     public static File typeFile(Context c) { return new File(runtimeDir(c), "RUNTIME-TYPE.txt"); }
+    public static File controlTemplateFile(Context c) { return new File(runtimeDir(c), "control/control.nacp.template"); }
+    public static File controlDir(Context c) { return new File(runtimeDir(c), "control"); }
+
+    public static boolean hasRetailControlTemplate(Context c) {
+        File f = controlTemplateFile(c);
+        return f.isFile() && f.length() == 0x4000;
+    }
 
     public static boolean isRetailRuntime(Context c) {
         return mainFile(c).isFile() && mainFile(c).length() > 0x1000
@@ -92,6 +99,8 @@ public final class RuntimeManager {
                     else if (name.equals("exefs/subsdk0") || name.equals("subsdk0")) outName = "exefs/subsdk0";
                     else if (name.equals("romfs/font-new.png") || name.equals("font-new.png")) outName = "romfs/font-new.png";
                     else if (name.equalsIgnoreCase("RUNTIME-TYPE.txt")) outName = "RUNTIME-TYPE.txt";
+                    else if (name.equals("control/control.nacp.template") || name.equals("control.nacp.template")) outName = "control/control.nacp.template";
+                    else if (name.startsWith("control/icon_") && name.endsWith(".dat")) outName = name;
 
                     if (outName == null) continue;
                     File out = safeChild(root, outName);
@@ -131,6 +140,15 @@ public final class RuntimeManager {
         } else {
             copy(fontFile(c), new File(romfs, "font-new.png"));
         }
+    }
+
+    public static void copyControlAssets(Context c, File workspaceControl) throws IOException {
+        if (!hasRetailControlTemplate(c)) return;
+        File srcDir = controlDir(c);
+        File[] icons = srcDir.listFiles((dir, name) -> name.startsWith("icon_") && name.endsWith(".dat"));
+        if (icons == null) return;
+        workspaceControl.mkdirs();
+        for (File icon : icons) copy(icon, new File(workspaceControl, icon.getName()));
     }
 
     private static String normalize(String n) {

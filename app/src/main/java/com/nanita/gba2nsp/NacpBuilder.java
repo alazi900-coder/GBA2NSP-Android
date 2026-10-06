@@ -2,6 +2,8 @@ package com.nanita.gba2nsp;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.io.*;
+import java.nio.file.Files;
 
 public final class NacpBuilder {
     private static final long SAVE_SIZE = 8L * 1024 * 1024;      // 8 MiB for SRAM + save states/config.
@@ -41,11 +43,58 @@ public final class NacpBuilder {
         return out;
     }
 
+
+    public static byte[] createFromTemplate(File template, String title, String publisher, String version, long titleId) throws IOException {
+        byte[] out = Files.readAllBytes(template.toPath());
+        if (out.length != 0x4000) throw new IOException("قالب control.nacp يجب أن يكون 0x4000 بايت");
+
+        long oldTitleId = le64(out, 0x3038);
+
+        // Keep the original retail control policy, save owner, save sizes,
+        // local-network policy and other runtime-sensitive fields intact.
+        // Only patch user-visible strings and IDs that are tied to the application ID.
+        for (int lang = 0; lang < 16; lang++) {
+            int base = lang * 0x300;
+            putCString(out, base, 0x200, title);
+            putCString(out, base + 0x200, 0x100, publisher);
+        }
+
+        putCString(out, 0x3060, 0x10, version);
+        putLe64(out, 0x3038, titleId);            // PresenceGroupId
+        putLe64(out, 0x3070, titleId + 0x1000L);  // AddOnContentBaseId
+
+        // SaveDataOwnerId at 0x3078 is intentionally preserved from the retail template.
+        // The runtime was built for that owner and changing it can break save-data access.
+
+        // LocalCommunicationId[8].
+        for (int i = 0; i < 8; i++) {
+            int off = 0x30B0 + i * 8;
+            if (le64(out, off) == oldTitleId) putLe64(out, off, titleId);
+        }
+
+        // SeedForPseudoDeviceId.
+        if (le64(out, 0x30F8) == oldTitleId) putLe64(out, 0x30F8, titleId);
+
+        // PlayLogQueryableApplicationId[16].
+        for (int i = 0; i < 16; i++) {
+            int off = 0x3190 + i * 8;
+            if (le64(out, off) == oldTitleId) putLe64(out, off, titleId);
+        }
+
+        return out;
+    }
+
     private static void putCString(byte[] dst, int off, int max, String value) {
         byte[] b = value == null ? new byte[0] : value.getBytes(StandardCharsets.UTF_8);
         int n = Math.min(max - 1, b.length);
         Arrays.fill(dst, off, off + max, (byte)0);
         System.arraycopy(b, 0, dst, off, n);
+    }
+
+    private static long le64(byte[] d, int o) {
+        long v = 0;
+        for (int i = 7; i >= 0; i--) v = (v << 8) | (d[o + i] & 255L);
+        return v;
     }
 
     private static void putLe32(byte[] d, int o, long v) {

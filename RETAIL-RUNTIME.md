@@ -38,3 +38,8 @@ The Generic V1 binary patch changes only the default ROM basename and bypasses t
 ## v0.9 packaging fix
 
 hacBrewPack emits unsigned NCA header signatures. Reusing an untouched retail NPDM is unsafe because its valid ACID contains the retail NCA-signing public key. The builder now clears the ACID signature and modulus in the copied NPDM before packaging, while keeping the ACID policy body and ACI0 permissions intact. This makes the retail template follow the same unsigned/homebrew verification path as npdmtool-generated applications.
+
+
+## v0.10 control packaging fix
+
+The retail runtime can now import the original working `control.nacp` as `control/control.nacp.template` together with the original `control/icon_*.dat` files. The builder preserves runtime-sensitive fields such as the original SaveDataOwnerId, save-data sizes, LocalCommunicationId policy, crash-report/HDCP settings and other control flags. It only patches the application-bound IDs and user-visible strings.
