@@ -90,9 +90,17 @@ public final class BuilderCore {
         if (romParent != null) romParent.mkdirs();
         copy(rom, romOut);
         File control = new File(root, "control"); control.mkdirs();
+        byte[] nacp = RuntimeManager.hasRetailControlTemplate(c)
+                ? NacpBuilder.createFromTemplate(RuntimeManager.controlTemplateFile(c), safeTitle, author, "1.0.0", tid)
+                : NacpBuilder.create(safeTitle, author, "1.0.0", tid);
         try (OutputStream out = new FileOutputStream(new File(control, "control.nacp"))) {
-            out.write(NacpBuilder.create(safeTitle, author, "1.0.0", tid));
+            out.write(nacp);
         }
+
+        // For the retail runtime, copy the original control icons so Control NCA
+        // matches the environment expected by the SDK/runtime as closely as possible.
+        RuntimeManager.copyControlAssets(c, control);
+
         if (icon != null) {
             validateIcon(icon);
             copy(icon, new File(control, "icon_AmericanEnglish.dat"));
