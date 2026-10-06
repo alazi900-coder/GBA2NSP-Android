@@ -127,12 +127,6 @@ public class MainActivity extends Activity {
             workspace = BuilderCore.prepareWorkspace(this, romFile, iconFile, title.getText().toString(), author.getText().toString(), tid.getText().toString());
             String romPath = RuntimeManager.romRelativePath(this);
             append("✓ romfs/" + romPath);
-            long packedRomSize = new File(workspace, "romfs/" + romPath).length();
-            if (packedRomSize != romFile.length()) {
-                append(String.format(Locale.US,
-                        "✓ ROM normalized: %.2f MiB → %.2f MiB (power-of-two padding)",
-                        romFile.length()/1048576.0, packedRomSize/1048576.0));
-            }
             append("✓ exefs/main");
             append("✓ exefs/main.npdm — ProgramId/ACI0 owner IDs patched");
             if (RuntimeManager.isRetailRuntime(this)) {
