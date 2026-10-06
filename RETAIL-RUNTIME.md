@@ -43,3 +43,8 @@ hacBrewPack emits unsigned NCA header signatures. Reusing an untouched retail NP
 ## v0.10 control packaging fix
 
 The retail runtime can now import the original working `control.nacp` as `control/control.nacp.template` together with the original `control/icon_*.dat` files. The builder preserves runtime-sensitive fields such as the original SaveDataOwnerId, save-data sizes, LocalCommunicationId policy, crash-report/HDCP settings and other control flags. It only patches the application-bound IDs and user-visible strings.
+
+
+## v0.14 rollback baseline
+
+This release intentionally restores the last known-good application builder state from v0.11. The experimental SaveDataOwnerId and ROM-padding changes introduced after v0.11 are not included. Generic Runtime V6 remains the known-good runtime for non-power-of-two GBA ROM booting. Save persistence work is isolated from this boot-stable baseline.
