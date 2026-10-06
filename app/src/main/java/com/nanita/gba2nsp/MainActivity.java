@@ -133,7 +133,9 @@ public class MainActivity extends Activity {
                 append("✓ exefs/rtld");
                 append("✓ exefs/sdk");
                 append("✓ exefs/subsdk0");
-                append("✓ Retail GBA runtime template");
+                append(RuntimeManager.isGenericRetailRuntime(this)
+                        ? "✓ Retail GBA Generic V1 — FireRed telemetry disabled"
+                        : "✓ Retail FireRed runtime template");
             } else {
                 append("✓ romfs/font-new.png — mGBA GUI font");
             }
