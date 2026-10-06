@@ -84,7 +84,11 @@ public final class BuilderCore {
         if (safeTitle.getBytes(StandardCharsets.UTF_8).length >= 0x200) throw new IllegalArgumentException("اسم اللعبة طويل جدا");
         File root = new File(c.getFilesDir(), "workspace"); deleteRecursive(root); root.mkdirs();
         File romfs = new File(root, "romfs"); romfs.mkdirs();
-        copy(rom, new File(romfs, "game.gba"));
+        String romRelative = RuntimeManager.romRelativePath(c);
+        File romOut = new File(romfs, romRelative);
+        File romParent = romOut.getParentFile();
+        if (romParent != null) romParent.mkdirs();
+        copy(rom, romOut);
         File control = new File(root, "control"); control.mkdirs();
         try (OutputStream out = new FileOutputStream(new File(control, "control.nacp"))) {
             out.write(NacpBuilder.create(safeTitle, author, "1.0.0", tid));
@@ -97,7 +101,7 @@ public final class BuilderCore {
         String hex = "0x" + tidText.toUpperCase(Locale.ROOT);
         String npdm = npdmJson(hex);
         writeUtf8(new File(cfg, "npdm.json"), npdm);
-        String metadata = "{\n  \"title\": \"" + jsonEscape(safeTitle) + "\",\n  \"author\": \"" + jsonEscape(author) + "\",\n  \"title_id\": \"" + hex + "\",\n  \"rom\": \"romfs/game.gba\"\n}\n";
+        String metadata = "{\n  \"title\": \"" + jsonEscape(safeTitle) + "\",\n  \"author\": \"" + jsonEscape(author) + "\",\n  \"title_id\": \"" + hex + "\",\n  \"runtime\": \"" + RuntimeManager.runtimeKind(c) + "\",\n  \"rom\": \"romfs/" + jsonEscape(romRelative) + "\"\n}\n";
         writeUtf8(new File(cfg, "metadata.json"), metadata);
         RuntimeManager.copyIntoWorkspace(c, root, tid);
         return root;
