@@ -16,3 +16,20 @@ The Android app patches the ACI0 ProgramId and matching ACI0 filesystem/save-own
 No proprietary runtime binaries are stored in this repository. The user must import a template extracted from software they are authorized to use.
 
 The retail runtime was verified against a working package whose RomFS contains `FireRed_e.gba` directly at the RomFS root. Do not place it under a `poke/` directory.
+
+
+## Generic Retail Runtime V1
+
+A locally patched runtime may include `RUNTIME-TYPE.txt` with:
+
+```
+retail-generic-v1
+```
+
+For that runtime the app writes the selected ROM to:
+
+```
+romfs/game.gba
+```
+
+The Generic V1 binary patch changes only the default ROM basename and bypasses the FireRed/Pokemon telemetry/reporting paths. The GBA core, graphics, audio, input and backup emulation are left unchanged. Proprietary binaries are not committed to this repository.
