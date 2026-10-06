@@ -16,7 +16,8 @@ public final class RuntimeManager {
     public static File rtldFile(Context c) { return new File(runtimeDir(c), "exefs/rtld"); }
     public static File sdkFile(Context c) { return new File(runtimeDir(c), "exefs/sdk"); }
     public static File subsdk0File(Context c) { return new File(runtimeDir(c), "exefs/subsdk0"); }
-    public static File fontFile(Context c) { return new File(runtimeDir(c), "romfs/font-new.png"); }\n    public static File typeFile(Context c) { return new File(runtimeDir(c), "RUNTIME-TYPE.txt"); }
+    public static File fontFile(Context c) { return new File(runtimeDir(c), "romfs/font-new.png"); }
+    public static File typeFile(Context c) { return new File(runtimeDir(c), "RUNTIME-TYPE.txt"); }
 
     public static boolean isRetailRuntime(Context c) {
         return mainFile(c).isFile() && mainFile(c).length() > 0x1000
