@@ -16,13 +16,15 @@ public final class BuilderCore {
     private BuilderCore() {}
 
     public static String generateTitleId() {
-        // Application ProgramIds reserve the low 12 bits for related content
-        // (PatchId = base + 0x800, AddOnContentBaseId = base + 0x1000).
+        // Base applications must have the low 13 bits clear.
+        // Eden/Yuzu use BASE_TITLE_ID_MASK = 0xFFFFFFFFFFFFE000.
+        // +0x800 is the update ID; +0x1000 is the AOC base.
         byte[] b = new byte[6];
         new SecureRandom().nextBytes(b);
         long rnd = 0;
         for (byte v : b) rnd = (rnd << 8) | (v & 0xffL);
-        long tid = 0x0100000000010000L | ((rnd & 0x00000FFFFFFFFFFFL) << 12);
+        long tid = 0x0100000000010000L | ((rnd & 0x000007FFFFFFFFFFL) << 13);
+        tid &= 0x01FFFFFFFFFFE000L;
         return String.format(Locale.US, "%016X", tid);
     }
 
@@ -30,10 +32,10 @@ public final class BuilderCore {
         String x = s == null ? "" : s.trim().replace("0x", "").replace("0X", "");
         if (!TID.matcher(x).matches()) throw new IllegalArgumentException("Title ID يجب أن يكون 16 رقما سداسيا ويبدأ بـ 01");
         long v = Long.parseUnsignedLong(x, 16);
-        if ((v & 0xFFFL) != 0)
-            throw new IllegalArgumentException("Title ID للتطبيق يجب أن تنتهي آخر 3 خانات بـ 000");
+        if ((v & 0x1FFFL) != 0)
+            throw new IllegalArgumentException("Title ID الأساسي يجب أن يكون بمحاذاة 0x2000 (آخر 13 بت = 0)");
         if (Long.compareUnsigned(v, 0x0100000000010000L) < 0 ||
-                Long.compareUnsigned(v, 0x01FFFFFFFFFFF000L) > 0)
+                Long.compareUnsigned(v, 0x01FFFFFFFFFFE000L) > 0)
             throw new IllegalArgumentException("Title ID خارج نطاق تطبيقات Runtime");
         return v;
     }
