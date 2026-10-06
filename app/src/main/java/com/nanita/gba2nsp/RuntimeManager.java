@@ -16,7 +16,7 @@ public final class RuntimeManager {
     public static File rtldFile(Context c) { return new File(runtimeDir(c), "exefs/rtld"); }
     public static File sdkFile(Context c) { return new File(runtimeDir(c), "exefs/sdk"); }
     public static File subsdk0File(Context c) { return new File(runtimeDir(c), "exefs/subsdk0"); }
-    public static File fontFile(Context c) { return new File(runtimeDir(c), "romfs/font-new.png"); }
+    public static File fontFile(Context c) { return new File(runtimeDir(c), "romfs/font-new.png"); }\n    public static File typeFile(Context c) { return new File(runtimeDir(c), "RUNTIME-TYPE.txt"); }
 
     public static boolean isRetailRuntime(Context c) {
         return mainFile(c).isFile() && mainFile(c).length() > 0x1000
@@ -24,6 +24,16 @@ public final class RuntimeManager {
                 && rtldFile(c).isFile() && rtldFile(c).length() > 0x100
                 && sdkFile(c).isFile() && sdkFile(c).length() > 0x1000
                 && subsdk0File(c).isFile() && subsdk0File(c).length() > 0x1000;
+    }
+
+    public static boolean isGenericRetailRuntime(Context c) {
+        if (!isRetailRuntime(c) || !typeFile(c).isFile()) return false;
+        try {
+            String s = readText(typeFile(c), 128).trim();
+            return s.equalsIgnoreCase("retail-generic-v1");
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     public static boolean isMgbaRuntime(Context c) {
@@ -37,11 +47,13 @@ public final class RuntimeManager {
     }
 
     public static String romRelativePath(Context c) {
+        if (isGenericRetailRuntime(c)) return "game.gba";
         return isRetailRuntime(c) ? "FireRed_e.gba" : "game.gba";
     }
 
     public static String runtimeKind(Context c) {
-        if (isRetailRuntime(c)) return "retail";
+        if (isGenericRetailRuntime(c)) return "retail-generic-v1";
+        if (isRetailRuntime(c)) return "retail-firered";
         if (isMgbaRuntime(c)) return "mgba";
         return "none";
     }
@@ -50,7 +62,7 @@ public final class RuntimeManager {
         if (!isReady(c)) return "Runtime Switch: غير مثبت";
         try {
             long[] r = NpdmPatcher.allowedRange(npdmFile(c));
-            String kind = isRetailRuntime(c) ? "Retail GBA Template" : "mGBA";
+            String kind = isGenericRetailRuntime(c) ? "Retail GBA Generic V1" : (isRetailRuntime(c) ? "Retail FireRed Template" : "mGBA");
             return String.format("Runtime Switch: %s جاهز ✓  [%016X-%016X]", kind, r[0], r[1]);
         } catch (Throwable e) {
             return "Runtime Switch: NPDM غير صالح";
@@ -78,6 +90,7 @@ public final class RuntimeManager {
                     else if (name.equals("exefs/sdk") || name.equals("sdk")) outName = "exefs/sdk";
                     else if (name.equals("exefs/subsdk0") || name.equals("subsdk0")) outName = "exefs/subsdk0";
                     else if (name.equals("romfs/font-new.png") || name.equals("font-new.png")) outName = "romfs/font-new.png";
+                    else if (name.equalsIgnoreCase("RUNTIME-TYPE.txt")) outName = "RUNTIME-TYPE.txt";
 
                     if (outName == null) continue;
                     File out = safeChild(root, outName);
@@ -130,6 +143,19 @@ public final class RuntimeManager {
         String rp = root.getCanonicalPath() + File.separator;
         if (!f.getCanonicalPath().startsWith(rp)) throw new IOException("ZIP path غير آمن");
         return f;
+    }
+
+    private static String readText(File f, int maxBytes) throws IOException {
+        try (InputStream in = new FileInputStream(f); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            byte[] buf = new byte[128];
+            int n, total = 0;
+            while ((n = in.read(buf)) > 0) {
+                total += n;
+                if (total > maxBytes) throw new IOException("Runtime type marker كبير بشكل غير متوقع");
+                out.write(buf, 0, n);
+            }
+            return out.toString("UTF-8");
+        }
     }
 
     private static void copy(File a, File b) throws IOException {
