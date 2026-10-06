@@ -99,7 +99,7 @@ public final class BuilderCore {
         File romOut = new File(romfs, romRelative);
         File romParent = romOut.getParentFile();
         if (romParent != null) romParent.mkdirs();
-        copyGbaPaddedToPowerOfTwo(rom, romOut);
+        copy(rom, romOut);
         File control = new File(root, "control"); control.mkdirs();
         byte[] nacp = RuntimeManager.hasRetailControlTemplate(c)
                 ? NacpBuilder.createFromTemplate(RuntimeManager.controlTemplateFile(c), safeTitle, author, "1.0.0", tid)
@@ -139,31 +139,6 @@ public final class BuilderCore {
             z.putNextEntry(new ZipEntry(name));
             try (InputStream in = new FileInputStream(x)) { int n; while ((n=in.read(buf))>0) z.write(buf,0,n); }
             z.closeEntry();
-        }
-    }
-
-    private static void copyGbaPaddedToPowerOfTwo(File src, File dst) throws IOException {
-        long size = src.length();
-        long target = 1;
-        while (target < size) target <<= 1;
-        long max = 32L * 1024 * 1024;
-        if (target > max) throw new IOException("حجم ROM بعد التوسعة يتجاوز 32 MiB");
-
-        try (InputStream in = new FileInputStream(src); OutputStream out = new FileOutputStream(dst)) {
-            byte[] buf = new byte[131072];
-            int n;
-            while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
-
-            // The retail runtime already zero-fills its rounded ROM allocation.
-            // Writing the same padding into RomFS avoids its non-power-of-two
-            // rejection before the generic GBA handler starts.
-            long remaining = target - size;
-            byte[] zero = new byte[131072];
-            while (remaining > 0) {
-                int chunk = (int)Math.min(remaining, zero.length);
-                out.write(zero, 0, chunk);
-                remaining -= chunk;
-            }
         }
     }
 
