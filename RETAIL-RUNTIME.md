@@ -33,3 +33,8 @@ romfs/game.gba
 ```
 
 The Generic V1 binary patch changes only the default ROM basename and bypasses the FireRed/Pokemon telemetry/reporting paths. The GBA core, graphics, audio, input and backup emulation are left unchanged. Proprietary binaries are not committed to this repository.
+
+
+## v0.9 packaging fix
+
+hacBrewPack emits unsigned NCA header signatures. Reusing an untouched retail NPDM is unsafe because its valid ACID contains the retail NCA-signing public key. The builder now clears the ACID signature and modulus in the copied NPDM before packaging, while keeping the ACID policy body and ACI0 permissions intact. This makes the retail template follow the same unsigned/homebrew verification path as npdmtool-generated applications.
