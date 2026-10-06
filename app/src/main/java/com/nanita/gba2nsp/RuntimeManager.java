@@ -37,7 +37,7 @@ public final class RuntimeManager {
     }
 
     public static String romRelativePath(Context c) {
-        return isRetailRuntime(c) ? "poke/FireRed_e.gba" : "game.gba";
+        return isRetailRuntime(c) ? "FireRed_e.gba" : "game.gba";
     }
 
     public static String runtimeKind(Context c) {
