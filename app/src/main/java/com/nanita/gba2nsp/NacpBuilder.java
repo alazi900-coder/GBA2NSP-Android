@@ -63,10 +63,8 @@ public final class NacpBuilder {
         putLe64(out, 0x3038, titleId);            // PresenceGroupId
         putLe64(out, 0x3070, titleId + 0x1000L);  // AddOnContentBaseId
 
-        // Standalone NSPs must own their own user SaveData. The extracted retail
-        // template points at the original NSO/GBA application's save owner, which
-        // makes nn::fs::EnsureSaveData/MountSaveData target the wrong title.
-        putLe64(out, 0x3078, titleId);            // SaveDataOwnerId
+        // SaveDataOwnerId at 0x3078 is intentionally preserved from the retail template.
+        // The runtime was built for that owner and changing it can break save-data access.
 
         // LocalCommunicationId[8].
         for (int i = 0; i < 8; i++) {
