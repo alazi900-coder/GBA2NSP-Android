@@ -39,12 +39,12 @@ set(HBP_SOURCES
     "${hacbrewpack_SOURCE_DIR}/main.c"
     "${hacbrewpack_SOURCE_DIR}/filepath.c"
     "${hacbrewpack_SOURCE_DIR}/ConvertUTF.c"
-    "${hacbrewpack_SOURCE_DIR}/nca.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/hbp_patches/nca.c"
     "${hacbrewpack_SOURCE_DIR}/romfs.c"
     "${hacbrewpack_SOURCE_DIR}/pfs0.c"
     "${hacbrewpack_SOURCE_DIR}/ivfc.c"
     "${hacbrewpack_SOURCE_DIR}/nacp.c"
-    "${hacbrewpack_SOURCE_DIR}/cnmt.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/hbp_patches/cnmt.c"
 )
 
 add_library(hacbrewpack_core STATIC ${HBP_SOURCES})
