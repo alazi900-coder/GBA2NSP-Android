@@ -16,17 +16,26 @@ public final class BuilderCore {
     private BuilderCore() {}
 
     public static String generateTitleId() {
-        byte[] b = new byte[6]; new SecureRandom().nextBytes(b);
-        b[0] |= 0x10; // stay safely inside the standard 0x01 application range
-        StringBuilder s = new StringBuilder("0100");
-        for (byte v : b) s.append(String.format(Locale.US, "%02X", v & 0xff));
-        return s.toString();
+        // Application ProgramIds reserve the low 12 bits for related content
+        // (PatchId = base + 0x800, AddOnContentBaseId = base + 0x1000).
+        byte[] b = new byte[6];
+        new SecureRandom().nextBytes(b);
+        long rnd = 0;
+        for (byte v : b) rnd = (rnd << 8) | (v & 0xffL);
+        long tid = 0x0100000000010000L | ((rnd & 0x00000FFFFFFFFFFFL) << 12);
+        return String.format(Locale.US, "%016X", tid);
     }
 
     public static long parseTitleId(String s) {
         String x = s == null ? "" : s.trim().replace("0x", "").replace("0X", "");
         if (!TID.matcher(x).matches()) throw new IllegalArgumentException("Title ID يجب أن يكون 16 رقما سداسيا ويبدأ بـ 01");
-        return Long.parseUnsignedLong(x, 16);
+        long v = Long.parseUnsignedLong(x, 16);
+        if ((v & 0xFFFL) != 0)
+            throw new IllegalArgumentException("Title ID للتطبيق يجب أن تنتهي آخر 3 خانات بـ 000");
+        if (Long.compareUnsigned(v, 0x0100000000010000L) < 0 ||
+                Long.compareUnsigned(v, 0x01FFFFFFFFFFF000L) > 0)
+            throw new IllegalArgumentException("Title ID خارج نطاق تطبيقات Runtime");
+        return v;
     }
 
     public static File importUri(Context c, Uri uri, File dst) throws IOException {
@@ -54,6 +63,8 @@ public final class BuilderCore {
         String text = readTextLimited(f, 2 * 1024 * 1024).toLowerCase(Locale.ROOT);
         if (!text.contains("header_key")) throw new IOException("prod.keys لا يحتوي header_key");
         if (!text.contains("key_area_key_application_")) throw new IOException("prod.keys لا يحتوي key_area_key_application");
+        if (!text.contains("key_area_key_application_14"))
+            throw new IOException("prod.keys لا يحتوي key_area_key_application_14 المطلوب لـ Key Generation 21");
     }
 
     private static String readTextLimited(File f, int max) throws IOException {
