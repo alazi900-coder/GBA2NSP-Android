@@ -43,3 +43,8 @@ hacBrewPack emits unsigned NCA header signatures. Reusing an untouched retail NP
 ## v0.10 control packaging fix
 
 The retail runtime can now import the original working `control.nacp` as `control/control.nacp.template` together with the original `control/icon_*.dat` files. The builder preserves runtime-sensitive fields such as the original SaveDataOwnerId, save-data sizes, LocalCommunicationId policy, crash-report/HDCP settings and other control flags. It only patches the application-bound IDs and user-visible strings.
+
+
+## v0.12 standalone SaveData ownership fix
+
+The extracted retail NACP points `SaveDataOwnerId` at the original Nintendo GBA/NSO application's save owner. That is correct only inside the original package family. For a standalone generated NSP, v0.12 now rewrites `SaveDataOwnerId` to the generated application Title ID while preserving the original 1 MiB user-save size and 1 MiB journal size. This matches the runtime's calls to `nn::fs::EnsureSaveData` / `nn::fs::MountSaveData`, which mount the current application's user save without an explicit ProgramId argument.
