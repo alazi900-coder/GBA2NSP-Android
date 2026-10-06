@@ -16,8 +16,9 @@ public final class BuilderCore {
     private BuilderCore() {}
 
     public static String generateTitleId() {
-        byte[] b = new byte[7]; new SecureRandom().nextBytes(b);
-        StringBuilder s = new StringBuilder("05");
+        byte[] b = new byte[6]; new SecureRandom().nextBytes(b);
+        b[0] |= 0x10; // stay safely inside the standard 0x01 application range
+        StringBuilder s = new StringBuilder("0100");
         for (byte v : b) s.append(String.format(Locale.US, "%02X", v & 0xff));
         return s.toString();
     }
@@ -132,27 +133,28 @@ public final class BuilderCore {
         return "{\n"+
             "  \"name\": \"GBA Single NSP\",\n"+
             "  \"title_id\": \""+tid+"\",\n"+
-            "  \"title_id_range_min\": \""+tid+"\",\n"+
-            "  \"title_id_range_max\": \""+tid+"\",\n"+
-            "  \"main_thread_stack_size\": \"0x40000\",\n"+
+            "  \"title_id_range_min\": \"0x0100000000010000\",\n"+
+            "  \"title_id_range_max\": \"0x01FFFFFFFFFFFFFF\",\n"+
+            "  \"main_thread_stack_size\": \"0x100000\",\n"+
             "  \"main_thread_priority\": 44,\n"+
-            "  \"default_cpu_id\": 2,\n"+
+            "  \"default_cpu_id\": 0,\n"+
             "  \"process_category\": 0,\n"+
             "  \"pool_partition\": 0,\n"+
             "  \"is_64_bit\": true,\n"+
-            "  \"address_space_type\": 1,\n"+
+            "  \"address_space_type\": 3,\n"+
             "  \"is_retail\": true,\n"+
             "  \"filesystem_access\": {\"permissions\": \"0xFFFFFFFFFFFFFFFF\"},\n"+
-            "  \"service_access\": [\"fsp-srv\",\"acc:u0\",\"appletOE\",\"apm\",\"audout:u\",\"audren:u\",\"hid\",\"lm\",\"nvdrv\",\"psm\",\"set\",\"set:sys\",\"time:u\",\"vi:u\"],\n"+
+            "  \"service_access\": [\"fsp-srv\",\"acc:u0\",\"aoc:u\",\"apm\",\"appletOE\",\"audin:u\",\"audout:u\",\"audren:u\",\"bsd:u\",\"bsdcfg\",\"caps:su\",\"caps:u\",\"csrng\",\"friend:u\",\"hid\",\"hwopus\",\"irs\",\"ldn:u\",\"ldr:ro\",\"lm\",\"mii:u\",\"mm:u\",\"nfc:mf:u\",\"nfc:user\",\"nfp:user\",\"nifm:u\",\"nim:eca\",\"nsd:u\",\"ntc\",\"nvdrv\",\"pcm\",\"pctl\",\"pl:u\",\"prepo:u\",\"psm\",\"set\",\"set:sys\",\"sfdnsres\",\"ssl\",\"time:u\",\"vi:u\"],\n"+
             "  \"service_host\": [],\n"+
             "  \"kernel_capabilities\": [\n"+
             "    {\"type\":\"kernel_flags\",\"value\":{\"highest_thread_priority\":59,\"lowest_thread_priority\":28,\"lowest_cpu_id\":0,\"highest_cpu_id\":2}},\n"+
             "    {\"type\":\"syscalls\",\"value\":{\n"+
-            "      \"svcSetHeapSize\":\"0x01\",\"svcSetMemoryPermission\":\"0x02\",\"svcSetMemoryAttribute\":\"0x03\",\"svcMapMemory\":\"0x04\",\"svcUnmapMemory\":\"0x05\",\"svcQueryMemory\":\"0x06\",\"svcExitProcess\":\"0x07\",\"svcCreateThread\":\"0x08\",\"svcStartThread\":\"0x09\",\"svcExitThread\":\"0x0A\",\"svcSleepThread\":\"0x0B\",\"svcGetThreadPriority\":\"0x0C\",\"svcSetThreadPriority\":\"0x0D\",\"svcGetThreadCoreMask\":\"0x0E\",\"svcSetThreadCoreMask\":\"0x0F\",\"svcGetCurrentProcessorNumber\":\"0x10\",\"svcSignalEvent\":\"0x11\",\"svcClearEvent\":\"0x12\",\"svcMapSharedMemory\":\"0x13\",\"svcUnmapSharedMemory\":\"0x14\",\"svcCreateTransferMemory\":\"0x15\",\"svcCloseHandle\":\"0x16\",\"svcResetSignal\":\"0x17\",\"svcWaitSynchronization\":\"0x18\",\"svcCancelSynchronization\":\"0x19\",\"svcArbitrateLock\":\"0x1A\",\"svcArbitrateUnlock\":\"0x1B\",\"svcWaitProcessWideKeyAtomic\":\"0x1C\",\"svcSignalProcessWideKey\":\"0x1D\",\"svcGetSystemTick\":\"0x1E\",\"svcConnectToNamedPort\":\"0x1F\",\"svcSendSyncRequestLight\":\"0x20\",\"svcSendSyncRequest\":\"0x21\",\"svcSendSyncRequestWithUserBuffer\":\"0x22\",\"svcBreak\":\"0x26\",\"svcOutputDebugString\":\"0x27\",\"svcReturnFromException\":\"0x28\",\"svcGetInfo\":\"0x29\",\"svcUnmapTransferMemory\":\"0x52\"\n"+
+            "      \"svcSetHeapSize\":\"0x01\",\"svcSetMemoryPermission\":\"0x02\",\"svcSetMemoryAttribute\":\"0x03\",\"svcMapMemory\":\"0x04\",\"svcUnmapMemory\":\"0x05\",\"svcQueryMemory\":\"0x06\",\"svcExitProcess\":\"0x07\",\"svcCreateThread\":\"0x08\",\"svcStartThread\":\"0x09\",\"svcExitThread\":\"0x0A\",\"svcSleepThread\":\"0x0B\",\"svcGetThreadPriority\":\"0x0C\",\"svcSetThreadPriority\":\"0x0D\",\"svcGetThreadCoreMask\":\"0x0E\",\"svcSetThreadCoreMask\":\"0x0F\",\"svcGetCurrentProcessorNumber\":\"0x10\",\"svcSignalEvent\":\"0x11\",\"svcClearEvent\":\"0x12\",\"svcMapSharedMemory\":\"0x13\",\"svcUnmapSharedMemory\":\"0x14\",\"svcCreateTransferMemory\":\"0x15\",\"svcCloseHandle\":\"0x16\",\"svcResetSignal\":\"0x17\",\"svcWaitSynchronization\":\"0x18\",\"svcCancelSynchronization\":\"0x19\",\"svcArbitrateLock\":\"0x1A\",\"svcArbitrateUnlock\":\"0x1B\",\"svcWaitProcessWideKeyAtomic\":\"0x1C\",\"svcSignalProcessWideKey\":\"0x1D\",\"svcGetSystemTick\":\"0x1E\",\"svcConnectToNamedPort\":\"0x1F\",\"svcSendSyncRequestLight\":\"0x20\",\"svcSendSyncRequest\":\"0x21\",\"svcSendSyncRequestWithUserBuffer\":\"0x22\",\"svcSendAsyncRequestWithUserBuffer\":\"0x23\",\"svcGetProcessId\":\"0x24\",\"svcGetThreadId\":\"0x25\",\"svcBreak\":\"0x26\",\"svcOutputDebugString\":\"0x27\",\"svcReturnFromException\":\"0x28\",\"svcGetInfo\":\"0x29\",\"svcMapPhysicalMemory\":\"0x2C\",\"svcUnmapPhysicalMemory\":\"0x2D\",\"svcGetLastThreadInfo\":\"0x2F\",\"svcSetThreadActivity\":\"0x32\",\"svcGetThreadContext3\":\"0x33\",\"svcWaitForAddress\":\"0x34\",\"svcSignalToAddress\":\"0x35\",\"svcSynchronizePreemptionState\":\"0x36\",\"svcUnmapTransferMemory\":\"0x52\",\"svcFlushProcessDataCache\":\"0x5F\"\n"+
             "    }},\n"+
             "    {\"type\":\"application_type\",\"value\":1},\n"+
             "    {\"type\":\"min_kernel_version\",\"value\":\"0x91\"},\n"+
-            "    {\"type\":\"handle_table_size\",\"value\":512}\n"+
+            "    {\"type\":\"handle_table_size\",\"value\":512},\n"+
+            "    {\"type\":\"debug_flags\",\"value\":{\"allow_debug\":true,\"force_debug\":false}}\n"+
             "  ]\n"+
             "}\n";
     }
