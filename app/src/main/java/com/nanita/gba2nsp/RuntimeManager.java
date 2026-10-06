@@ -20,6 +20,14 @@ public final class RuntimeManager {
     public static File typeFile(Context c) { return new File(runtimeDir(c), "RUNTIME-TYPE.txt"); }
     public static File controlTemplateFile(Context c) { return new File(runtimeDir(c), "control/control.nacp.template"); }
     public static File controlDir(Context c) { return new File(runtimeDir(c), "control"); }
+    public static File logoDir(Context c) { return new File(runtimeDir(c), "logo"); }
+    public static File nintendoLogoFile(Context c) { return new File(logoDir(c), "NintendoLogo.png"); }
+    public static File startupMovieFile(Context c) { return new File(logoDir(c), "StartupMovie.gif"); }
+
+    public static boolean hasRetailLogo(Context c) {
+        return nintendoLogoFile(c).isFile() && nintendoLogoFile(c).length() > 1024
+                && startupMovieFile(c).isFile() && startupMovieFile(c).length() > 1024;
+    }
 
     public static boolean hasRetailControlTemplate(Context c) {
         File f = controlTemplateFile(c);
@@ -101,6 +109,8 @@ public final class RuntimeManager {
                     else if (name.equalsIgnoreCase("RUNTIME-TYPE.txt")) outName = "RUNTIME-TYPE.txt";
                     else if (name.equals("control/control.nacp.template") || name.equals("control.nacp.template")) outName = "control/control.nacp.template";
                     else if (name.startsWith("control/icon_") && name.endsWith(".dat")) outName = name;
+                    else if (name.equals("logo/NintendoLogo.png") || name.equals("NintendoLogo.png")) outName = "logo/NintendoLogo.png";
+                    else if (name.equals("logo/StartupMovie.gif") || name.equals("StartupMovie.gif")) outName = "logo/StartupMovie.gif";
 
                     if (outName == null) continue;
                     File out = safeChild(root, outName);
@@ -137,6 +147,12 @@ public final class RuntimeManager {
             copy(rtldFile(c), new File(exefs, "rtld"));
             copy(sdkFile(c), new File(exefs, "sdk"));
             copy(subsdk0File(c), new File(exefs, "subsdk0"));
+            if (hasRetailLogo(c)) {
+                File logo = new File(workspace, "logo");
+                logo.mkdirs();
+                copy(nintendoLogoFile(c), new File(logo, "NintendoLogo.png"));
+                copy(startupMovieFile(c), new File(logo, "StartupMovie.gif"));
+            }
         } else {
             copy(fontFile(c), new File(romfs, "font-new.png"));
         }
