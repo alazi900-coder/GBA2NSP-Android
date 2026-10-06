@@ -13,10 +13,13 @@ public final class RuntimeManager {
     public static File runtimeDir(Context c) { return new File(c.getFilesDir(), "switch_runtime"); }
     public static File mainFile(Context c) { return new File(runtimeDir(c), "exefs/main"); }
     public static File npdmFile(Context c) { return new File(runtimeDir(c), "exefs/main.npdm"); }
+    public static File fontFile(Context c) { return new File(runtimeDir(c), "romfs/font-new.png"); }
 
     public static boolean isReady(Context c) {
-        File m = mainFile(c), n = npdmFile(c);
-        return m.isFile() && m.length() > 0x1000 && n.isFile() && n.length() >= 0x300;
+        File m = mainFile(c), n = npdmFile(c), f = fontFile(c);
+        return m.isFile() && m.length() > 0x1000
+                && n.isFile() && n.length() >= 0x300
+                && f.isFile() && f.length() > 1024;
     }
 
     public static String describe(Context c) {
@@ -40,8 +43,11 @@ public final class RuntimeManager {
                 while ((e = z.getNextEntry()) != null) {
                     if (e.isDirectory()) continue;
                     String name = normalize(e.getName());
-                    if (!(name.equals("exefs/main") || name.equals("exefs/main.npdm") || name.equals("main") || name.equals("main.npdm"))) continue;
-                    String outName = name.endsWith("main.npdm") ? "exefs/main.npdm" : "exefs/main";
+                    boolean isMain = name.equals("exefs/main") || name.equals("main");
+                    boolean isNpdm = name.equals("exefs/main.npdm") || name.equals("main.npdm");
+                    boolean isFont = name.equals("romfs/font-new.png") || name.equals("font-new.png");
+                    if (!(isMain || isNpdm || isFont)) continue;
+                    String outName = isNpdm ? "exefs/main.npdm" : (isFont ? "romfs/font-new.png" : "exefs/main");
                     File out = safeChild(root, outName);
                     File parent = out.getParentFile(); if (parent != null) parent.mkdirs();
                     try (OutputStream os = new FileOutputStream(out)) {
@@ -50,7 +56,7 @@ public final class RuntimeManager {
                 }
             }
         }
-        if (!isReady(c)) throw new IOException("Runtime ZIP يجب أن يحتوي exefs/main و exefs/main.npdm");
+        if (!isReady(c)) throw new IOException("Runtime ZIP V3 يجب أن يحتوي exefs/main و exefs/main.npdm و romfs/font-new.png");
         NpdmPatcher.allowedRange(npdmFile(c));
     }
 
@@ -59,6 +65,8 @@ public final class RuntimeManager {
         File exefs = new File(workspace, "exefs"); exefs.mkdirs();
         copy(mainFile(c), new File(exefs, "main"));
         NpdmPatcher.patchProgramId(npdmFile(c), new File(exefs, "main.npdm"), titleId);
+        File romfs = new File(workspace, "romfs"); romfs.mkdirs();
+        copy(fontFile(c), new File(romfs, "font-new.png"));
     }
 
     private static String normalize(String n) {

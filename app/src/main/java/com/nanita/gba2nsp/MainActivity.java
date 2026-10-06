@@ -126,6 +126,7 @@ public class MainActivity extends Activity {
             if (iconFile != null) BuilderCore.validateIcon(iconFile);
             workspace = BuilderCore.prepareWorkspace(this, romFile, iconFile, title.getText().toString(), author.getText().toString(), tid.getText().toString());
             append("✓ romfs/game.gba");
+            append("✓ romfs/font-new.png — mGBA GUI font");
             append("✓ exefs/main");
             append("✓ exefs/main.npdm — ProgramId patched");
             append("✓ control/control.nacp — SaveData 8 MiB + journal 4 MiB");

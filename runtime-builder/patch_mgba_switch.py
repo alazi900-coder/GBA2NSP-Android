@@ -15,16 +15,26 @@ if not main.is_file():
     raise SystemExit(f"mGBA Switch main.c not found: {main}")
 
 s = main.read_text(encoding="utf-8")
-if "GBA_ANDROID_RUNTIME_PATCH" in s:
-    print("mGBA runtime already patched")
+if "GBA_ANDROID_RUNTIME_PATCH_V3" in s:
+    print("mGBA runtime already patched (V3)")
     raise SystemExit(0)
+if "GBA_ANDROID_RUNTIME_PATCH" in s:
+    raise SystemExit("Old GBA runtime patch detected; clean vendor/mgba before rebuilding")
+
+
+# Installed-title runtime does not need nxlink/network debug I/O. Keeping these
+# calls would require bsd:u/sfdnsres and can make a packaged NSP fail early.
+for network_line in ("\tsocketInitializeDefault();\n", "\tnxlinkStdio();\n", "\tsocketExit();\n"):
+    if network_line not in s:
+        raise SystemExit(f"Unsupported mGBA source: expected network line not found: {network_line.strip()}")
+    s = s.replace(network_line, "", 1)
 
 main_sig = re.search(r"int main\s*\(int argc, char\* argv\[\]\)\s*\{", s)
 if not main_sig:
     raise SystemExit("Unsupported mGBA source: main() signature not found")
 
 forced = r'''
-	/* GBA_ANDROID_RUNTIME_PATCH: launch the ROM embedded in RomFS. */
+	/* GBA_ANDROID_RUNTIME_PATCH_V3: launch the ROM embedded in RomFS. */
 	char* gbaSingleArgv[] = { "mgba", "romfs:/game.gba", NULL };
 	argc = 2;
 	argv = gbaSingleArgv;
@@ -37,7 +47,7 @@ if init_marker not in s:
 
 save_setup = r'''
 
-	/* GBA_ANDROID_RUNTIME_PATCH: persistent per-title/per-user SaveData. */
+	/* GBA_ANDROID_RUNTIME_PATCH_V3: persistent per-title/per-user SaveData. */
 	AccountUid gbaSingleUid = {0};
 	u64 gbaSingleProgramId = 0;
 	Result gbaSingleRc = accountInitialize(AccountServiceType_Application);

@@ -1,21 +1,24 @@
-# Build validation — v0.2
+# Build validation — v0.3 Runtime Boot Fix
 
-## اختبارات نجحت في بيئة العمل الحالية
+## إصلاحات V3
 
-- Java `NacpBuilder` compiles and outputs exactly `0x4000` bytes.
-- PresenceGroupId at `0x3038` matches the selected Title ID.
-- SaveDataOwnerId at `0x3078` matches the selected Title ID.
-- UserAccountSaveDataSize at `0x3080` = 8 MiB.
-- UserAccountSaveDataJournalSize at `0x3088` = 4 MiB.
-- `NpdmPatcher` changes ACI0 ProgramId and leaves ACID min/max unchanged.
-- Runtime NPDM JSON parses and includes SVC `0x26`, `0x27`, `0x28`, `0x29`.
-- Runtime patch Python syntax passes.
-- Native exit shim passes C11 syntax check.
+- تمت إضافة `svcUnmapTransferMemory` (`SVC 0x52`) إلى NPDM.
+- تمت إضافة خدمات التطبيق التي يحتاجها mGBA/libnx: `appletOE`, `apm`, `audout:u`, `nvdrv`, `psm`, `set`, `time:u`, `vi:u` وغيرها.
+- أزيل `socketInitializeDefault` و`nxlinkStdio` و`socketExit` من Runtime المخصص للـNSP حتى لا يعتمد على خدمات الشبكة/debug.
+- أصبح Runtime ZIP يحتوي `romfs/font-new.png` إضافة إلى `exefs/main` و`exefs/main.npdm`.
+- تطبيق Android يرفض Runtime القديم الناقص وينسخ الخط إلى Workspace تلقائيا.
+- Workflow يفشل إذا غاب SVC 0x52 أو الخدمات الأساسية أو ملف الخط.
 
-## يحتاج بيئة خارجية للتأكيد الثنائي
+## تحقق محلي بدون devkitA64
 
-- Android APK native link/build: يحتاج Android SDK 35 + NDK 27 + CMake 3.22.1.
-- Switch Runtime NSO/NPDM build: يحتاج devkitA64/npdmtool/elf2nso.
-- التجربة النهائية على Atmosphère: تحتاج Switch فعلي و`prod.keys` يقدمه المستخدم.
+شغّل:
 
-تم تضمين GitHub Actions لكل من APK والـSwitch Runtime لكي يتم هذا التحقق في البيئة المناسبة.
+```bash
+./tests/test_core.sh
+```
+
+## يحتاج بيئة خارجية
+
+- بناء APK: Android SDK 35 + NDK 27 + CMake 3.22.1.
+- بناء Runtime: devkitA64 + `npdmtool` + `elf2nso`.
+- الاختبار النهائي: Switch/Atmosphere أو محاكي Switch يدعم NSP بشكل صحيح.

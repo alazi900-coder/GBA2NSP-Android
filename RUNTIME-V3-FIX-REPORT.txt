@@ -1,0 +1,20 @@
+GBA2NSP Android - Runtime V3 Boot Fix
+
+Confirmed from the previously built exefs/main:
+- 29 SVC instructions were present.
+- SVC 0x52 (svcUnmapTransferMemory) was present in the NSO but missing from runtime-npdm.json.
+
+V3 changes:
+1. Allow SVC 0x52.
+2. Add required application services for mGBA/libnx graphics/audio/applet/power.
+3. Remove nxlink/socket network-debug initialization from the installed-title runtime.
+4. Bundle romfs/font-new.png into GBA-Switch-Runtime.zip.
+5. Android app imports/copies that font and rejects old incomplete runtime ZIPs.
+6. GitHub Actions validates SVC/services/runtime ZIP structure.
+7. APK version bumped to 0.3.0.
+
+IMPORTANT:
+- Rebuild BOTH the Android APK and GBA-Switch-Runtime.zip.
+- Install the new APK.
+- Import the NEW V3 runtime ZIP; the old runtime is intentionally rejected.
+- Generate a fresh NSP. Old NSP files remain broken.

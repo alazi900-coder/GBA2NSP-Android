@@ -18,6 +18,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate V3 NPDM source
+        shell: bash
+        run: |
+          grep -q '"svcUnmapTransferMemory": "0x52"' runtime-builder/runtime-npdm.json
+          for svc in 'appletOE' 'audout:u' 'nvdrv' 'psm' 'time:u' 'vi:u'; do
+            grep -q "\"$svc\"" runtime-builder/runtime-npdm.json
+          done
+
       - name: Build reusable mGBA runtime
         shell: bash
         run: |
@@ -28,23 +36,24 @@ jobs:
         shell: bash
         run: |
           test -s runtime-builder/dist/GBA-Switch-Runtime.zip
-          python3 - <<'PY'
+          python3 - <<'PY2'
           from pathlib import Path
           import zipfile
           zpath = Path("runtime-builder/dist/GBA-Switch-Runtime.zip")
           with zipfile.ZipFile(zpath) as z:
               names = set(z.namelist())
-              missing = {"exefs/main", "exefs/main.npdm"} - names
+              required = {"exefs/main", "exefs/main.npdm", "romfs/font-new.png"}
+              missing = required - names
               if missing:
                   raise SystemExit(f"missing runtime files: {sorted(missing)}")
-              for name in ("exefs/main", "exefs/main.npdm"):
+              for name in required:
                   if z.getinfo(name).file_size <= 0:
                       raise SystemExit(f"empty runtime file: {name}")
-          PY
+          PY2
 
       - uses: actions/upload-artifact@v4
         with:
-          name: GBA-Switch-Runtime
+          name: GBA-Switch-Runtime-V3
           path: |
             runtime-builder/dist/GBA-Switch-Runtime.zip
             runtime-builder/dist/GBA-Switch-Runtime.sha256

@@ -33,3 +33,14 @@ javac -d "$TMP/classes" \
   "$ROOT/app/src/main/java/com/nanita/gba2nsp/NpdmPatcher.java" \
   "$TMP/TestCore.java"
 java -cp "$TMP/classes" TestCore "$TMP"
+
+# Runtime V3 regression guards (no devkitA64 required).
+grep -q '"svcUnmapTransferMemory": "0x52"' "$ROOT/runtime-builder/runtime-npdm.json"
+for svc in 'appletOE' 'audout:u' 'nvdrv' 'psm' 'time:u' 'vi:u'; do
+  grep -q "\"$svc\"" "$ROOT/runtime-builder/runtime-npdm.json"
+done
+grep -q 'romfs/font-new.png' "$ROOT/runtime-builder/build_runtime.sh"
+grep -q 'font-new.png' "$ROOT/app/src/main/java/com/nanita/gba2nsp/RuntimeManager.java"
+grep -q 'socketInitializeDefault' "$ROOT/runtime-builder/patch_mgba_switch.py"
+grep -q 'network_line' "$ROOT/runtime-builder/patch_mgba_switch.py"
+echo "PASS: Runtime V3 SVC/services/font guards"

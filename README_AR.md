@@ -1,8 +1,8 @@
-# GBA إلى NSP — Android v0.2
+# GBA إلى NSP — Android v0.3
 
 مشروع Android ARM64 لتحويل ROM من نوع `.gba` إلى حزمة NSP على الهاتف، اعتمادا على نفس فكرة مشروع الكمبيوتر الذي أرسلتَه.
 
-## ما أصبح فعليا في v0.2
+## ما أصبح فعليا في v0.3
 
 - اختيار ROM والتحقق من ترويسة GBA والحجم حتى 32 MiB.
 - استيراد `prod.keys` إلى مساحة التطبيق الخاصة فقط؛ لا توجد مفاتيح داخل المصدر أو APK.
@@ -12,9 +12,11 @@
   - SaveDataOwnerId.
   - User SaveData = **8 MiB**.
   - Journal = **4 MiB**.
-- استيراد **GBA Switch Runtime** مرة واحدة (`exefs/main` + `main.npdm`).
+- استيراد **GBA Switch Runtime V3** مرة واحدة (`exefs/main` + `main.npdm` + `romfs/font-new.png`).
 - تعديل ACI0 ProgramId داخل `main.npdm` لكل لعبة، مع إبقاء ACID كما هو.
-- SVC المصححة: `0x26`, `0x27`, `0x28`, `0x29`.
+- SVC المصححة: `0x26`, `0x27`, `0x28`, `0x29`, و`0x52` (`svcUnmapTransferMemory`).
+- خدمات Runtime الموسعة للصوت والعرض وApplet والطاقة.
+- إزالة nxlink/socket من Runtime المثبت لتجنب اعتماد شبكة غير مطلوب.
 - دمج مصدر `hacBrewPack` أثناء بناء APK عبر CMake/NDK وتحويل CLI إلى محرك JNI داخل التطبيق.
 - زر **إنشاء NSP** يشغل `hacBrewPack` داخل عملية Android ويصدر NSP عبر SAF.
 - ARM64 فقط (`arm64-v8a`) ولا يحتاج Root.
@@ -41,7 +43,7 @@
 
 يوجد Workflow ثان:
 
-`.github/workflows/build-android-apk.yml`
+`.github/workflows/android.yml`
 
 يبني Debug APK مع Android NDK و`hacBrewPack` ARM64. ويمكن أيضا فتح المشروع في Android Studio وبناؤه مباشرة. أول بناء يحتاج إنترنت لأن CMake يجلب نسخة `hacBrewPack` المثبتة على commit محدد.
 

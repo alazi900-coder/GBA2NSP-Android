@@ -17,9 +17,18 @@
   "service_access": [
     "fsp-srv",
     "acc:u0",
-    "set:sys",
+    "appletOE",
+    "apm",
+    "audout:u",
+    "audren:u",
     "hid",
-    "audren:u"
+    "lm",
+    "nvdrv",
+    "psm",
+    "set",
+    "set:sys",
+    "time:u",
+    "vi:u"
   ],
   "service_host": [],
   "kernel_capabilities": [
@@ -72,7 +81,8 @@
         "svcBreak": "0x26",
         "svcOutputDebugString": "0x27",
         "svcReturnFromException": "0x28",
-        "svcGetInfo": "0x29"
+        "svcGetInfo": "0x29",
+        "svcUnmapTransferMemory": "0x52"
       }
     },
     {
